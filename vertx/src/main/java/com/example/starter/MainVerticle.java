@@ -5,6 +5,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.HttpHeaders;
 
 import io.vertx.pgclient.*;
 import io.vertx.sqlclient.*;
@@ -12,6 +13,8 @@ import io.vertx.sqlclient.impl.SqlClientInternal;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import com.example.starter.model.*;
 
@@ -20,6 +23,7 @@ public class MainVerticle extends VerticleBase implements Handler<HttpServerRequ
   private HttpServer server;
   private SqlClientInternal client;
   private Throwable database_err;
+  private CharSequence date;
 
   private PreparedQuery<RowSet<Row>> GET_USERS;
 
@@ -29,6 +33,10 @@ public class MainVerticle extends VerticleBase implements Handler<HttpServerRequ
     server = vertx.createHttpServer(new HttpServerOptions()
       .setStrictThreadMode(true))
       .requestHandler(MainVerticle.this);
+    date = createDateHeader();
+    vertx.setPeriodic(1000, id -> {
+      date = createDateHeader();
+    });
 
     PgConnectOptions options = new PgConnectOptions();
     options.setDatabase("tes");
@@ -69,6 +77,10 @@ public class MainVerticle extends VerticleBase implements Handler<HttpServerRequ
     };
   }
 
+  public static CharSequence createDateHeader() {
+    return HttpHeaders.createOptimized(DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()));
+  }
+
   @Override
   public void handle(HttpServerRequest request){
     try {
@@ -91,10 +103,19 @@ public class MainVerticle extends VerticleBase implements Handler<HttpServerRequ
               return;
             }
 
-            Row row = result_set.next();
-            User data = new User(row.getString(0));
+            ArrayList<User> data = new ArrayList<>();
+
+            while (result_set.hasNext()){
+              Row row = result_set.next();
+              User user = new User(row.getString(0));
+              data.add(user);
+            }
+
+            data.add(new User("Fuji 3"));
+
             resp.putHeader("content-type", "application/json")
-              .end(data.toJson());
+              .putHeader(HttpHeaders.DATE, date)
+              .end(User.toJson(data));
           }
         });
 

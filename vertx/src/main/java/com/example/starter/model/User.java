@@ -5,6 +5,8 @@ import com.julienviet.jsonsergen.JsonSerGen;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.buffer.Buffer;
 
+import java.util.ArrayList;
+
   @DataObject
   @JsonSerGen(backends = Backend.DSL_JSON)
   public final class User {
@@ -20,7 +22,7 @@ public String getName() { return name; }
       return UserJsonSerializer.toJsonBuffer(this);
     }
 
- public static Buffer toJson(User[] users) {
+ public static Buffer toJson(ArrayList<User> users) {
     return UserJsonSerializer.toJsonBuffer(users);
   }
   }
