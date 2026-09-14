@@ -107,12 +107,11 @@ public class MainVerticle extends VerticleBase implements Handler<HttpServerRequ
 
             while (result_set.hasNext()){
               Row row = result_set.next();
-              User user = new User(row.getString(0));
+              User user = new User(row.getString("name"));
               data.add(user);
             }
 
-            data.add(new User("Fuji 3"));
-
+      
             resp.putHeader("content-type", "application/json")
               .putHeader(HttpHeaders.DATE, date)
               .end(User.toJson(data));
