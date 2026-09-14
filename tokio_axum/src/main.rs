@@ -73,7 +73,7 @@ async fn db(DatabaseClient(client): DatabaseClient) -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() {
-    let pg_pool = create_pool("postgres://postgres:fuji123@localhost/tes".to_string(), 16).await;
+    let pg_pool = create_pool("postgres://postgres:fuji123@localhost/tes".to_string(), 8).await;
 
     let app = Router::new()
         .route("/", get(json))
